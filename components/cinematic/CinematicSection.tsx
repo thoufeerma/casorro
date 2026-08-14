@@ -68,12 +68,12 @@ export const CinematicSection: React.FC<CinematicSectionProps> = ({
       {/* Preloader overlay while initial priority frames stream */}
       <CinematicPreloader progress={loadProgress} isLoaded={isLoaded} />
 
-      {/* Pinned Scroll Container (1000vh height provides smooth 1200-frame scrolling) */}
+      {/* Pinned Scroll Container (700vh height provides smooth 842-frame scrolling) */}
       <section
         ref={containerRef}
         id="cinematic-view"
         aria-label="Scroll Controlled Fragrance Cinematic Experience"
-        className="relative w-full h-[1000vh] bg-brand-charcoal-deep"
+        className="relative w-full h-[700vh] bg-brand-charcoal-deep"
       >
         {/* Sticky Fullscreen Viewport */}
         <div className="sticky top-0 h-screen w-full overflow-hidden bg-brand-charcoal-deep">

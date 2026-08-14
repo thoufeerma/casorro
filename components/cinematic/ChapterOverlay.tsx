@@ -59,13 +59,13 @@ export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
         </p>
       </div>
 
-      {/* Bottom chapter progress indicator (5 clips) */}
+      {/* Bottom chapter progress indicator (3 clips) */}
       <div className="flex items-center justify-between border-t border-brand-ivory/10 pt-4">
         <div className="text-[10px] font-sans tracking-ultra text-brand-ivory/40 uppercase">
           Scroll to navigate chapters
         </div>
         <div className="flex items-center gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
               className={`h-[2px] transition-all duration-300 ${
@@ -83,7 +83,7 @@ export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
 
 function getRomanNumeral(num: number): string {
   const map: Record<number, string> = {
-    1: "I", 2: "II", 3: "III", 4: "IV", 5: "V"
+    1: "I", 2: "II", 3: "III"
   };
   return map[num] || `${num}`;
 }
