@@ -49,15 +49,15 @@ export const FrameCanvas: React.FC<FrameCanvasProps> = ({
     });
   }, []);
 
-  // Preload sequence: Initial priority batch (first 100 frames), then sequential streaming
+  // Preload sequence: Priority batch (Clip 1 - 240 frames), then sequential streaming
   useEffect(() => {
     let isCancelled = false;
-    const PRIORITY_BATCH_SIZE = 100; // Priority: Clip 1 and Clip 2 fully preloaded
+    const PRIORITY_BATCH_SIZE = 240; // Preload clip1 completely first
 
     const startPreloading = async () => {
       let count = 0;
 
-      // 1. Priority Load (First 100 frames in strict order)
+      // 1. Priority Load (Clip 1 in strict sequential order)
       const priorityCount = Math.min(PRIORITY_BATCH_SIZE, TOTAL_FRAMES);
       for (let i = 0; i < priorityCount; i++) {
         if (isCancelled) return;
@@ -71,11 +71,11 @@ export const FrameCanvas: React.FC<FrameCanvasProps> = ({
         }
       }
 
-      // Signal that priority batch is ready for seamless playback
+      // Signal that priority batch (clip1) is ready
       onInitialLoadComplete?.();
 
-      // 2. Stream remaining frames sequentially in chunks
-      const CHUNK_SIZE = 8;
+      // 2. Stream remaining clip frames sequentially in chunks
+      const CHUNK_SIZE = 10;
       for (let i = priorityCount; i < TOTAL_FRAMES; i += CHUNK_SIZE) {
         if (isCancelled) return;
         const chunkIndices = [];
@@ -113,7 +113,7 @@ export const FrameCanvas: React.FC<FrameCanvasProps> = ({
         return imagesRef.current.get(targetIndex)!;
       }
 
-      // 2. Search BACKWARD ONLY inside the current clip boundary
+      // 2. Search BACKWARD ONLY inside current clip boundary
       for (let i = targetIndex - 1; i >= activeClip.startIndex; i--) {
         if (imagesRef.current.has(i)) {
           return imagesRef.current.get(i)!;

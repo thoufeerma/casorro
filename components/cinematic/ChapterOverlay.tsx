@@ -13,17 +13,17 @@ export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
   totalFrames,
 }) => {
   const { chapter } = currentPhase;
-  
-  // Calculate relative progress inside the current phase (0 to 1)
+
+  // Calculate relative progress inside current clip (0 to 1)
   const phaseLength = currentPhase.endIndex - currentPhase.startIndex + 1;
   const phaseProgress = (currentFrame - currentPhase.startIndex) / Math.max(1, phaseLength);
-  
-  // Soft fade in at phase start, full opacity in middle, soft fade out near end
+
+  // Soft fade in at clip start, full opacity in middle, soft fade out near clip end
   let opacity = 1;
-  if (phaseProgress < 0.15) {
-    opacity = phaseProgress / 0.15;
-  } else if (phaseProgress > 0.85) {
-    opacity = (1 - phaseProgress) / 0.15;
+  if (phaseProgress < 0.12) {
+    opacity = phaseProgress / 0.12;
+  } else if (phaseProgress > 0.88) {
+    opacity = (1 - phaseProgress) / 0.12;
   }
 
   return (
@@ -31,18 +31,18 @@ export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
       className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-6 sm:p-12 lg:p-16 transition-opacity duration-500"
       style={{ opacity: Math.max(0.15, opacity) }}
     >
-      {/* Top watermark / background detail */}
+      {/* Top watermark / brand indicator */}
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-sans tracking-ultra uppercase text-brand-ivory/30">
-          Collection 2026 &mdash; IVORY ROSE
+        <span className="text-[10px] font-sans tracking-ultra uppercase text-brand-ivory/40">
+          CASORRO &mdash; IVORY ROSE
         </span>
-        <span className="text-[10px] font-sans tracking-widest text-brand-rose/60 uppercase">
+        <span className="text-[10px] font-sans tracking-widest text-brand-rose/70 uppercase">
           Frame {currentFrame + 1} / {totalFrames}
         </span>
       </div>
 
-      {/* Main Chapter Headline & Editorial Subtitle */}
-      <div className="max-w-xl space-y-3 my-auto pl-2 border-l border-brand-rose/30">
+      {/* Main Chapter Headline & Subtitle */}
+      <div className="max-w-xl space-y-3 my-auto pl-4 border-l border-brand-rose/30">
         <div className="flex items-center gap-3">
           <span className="text-xs font-sans tracking-ultra uppercase text-brand-rose font-medium">
             Chapter {chapter.number}
@@ -59,19 +59,19 @@ export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
         </p>
       </div>
 
-      {/* Bottom chapter progress indicator */}
+      {/* Bottom chapter progress indicator (5 clips) */}
       <div className="flex items-center justify-between border-t border-brand-ivory/10 pt-4">
         <div className="text-[10px] font-sans tracking-ultra text-brand-ivory/40 uppercase">
           Scroll to navigate chapters
         </div>
-        <div className="flex items-center gap-1.5">
-          {Array.from({ length: 8 }).map((_, i) => (
+        <div className="flex items-center gap-2">
+          {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
               className={`h-[2px] transition-all duration-300 ${
                 chapter.number === getRomanNumeral(i + 1)
-                  ? "w-6 bg-brand-rose"
-                  : "w-2 bg-brand-ivory/20"
+                  ? "w-8 bg-brand-rose"
+                  : "w-2.5 bg-brand-ivory/20"
               }`}
             />
           ))}
@@ -83,8 +83,7 @@ export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
 
 function getRomanNumeral(num: number): string {
   const map: Record<number, string> = {
-    1: "I", 2: "II", 3: "III", 4: "IV",
-    5: "V", 6: "VI", 7: "VII", 8: "VIII"
+    1: "I", 2: "II", 3: "III", 4: "IV", 5: "V"
   };
   return map[num] || `${num}`;
 }
