@@ -1,0 +1,232 @@
+"use client";
+
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { FRAME_SEQUENCE, TOTAL_FRAMES, PHASE_RANGES, FramePhaseRange } from "@/lib/framesManifest";
+
+interface FrameCanvasProps {
+  currentFrameIndex: number;
+  onProgress?: (progress: number) => void;
+  onInitialLoadComplete?: () => void;
+}
+
+export const FrameCanvas: React.FC<FrameCanvasProps> = ({
+  currentFrameIndex,
+  onProgress,
+  onInitialLoadComplete,
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const imagesRef = useRef<Map<number, HTMLImageElement>>(new Map());
+  const lastDrawnImageRef = useRef<HTMLImageElement | null>(null);
+  const [loadedCount, setLoadedCount] = useState(0);
+  const rafIdRef = useRef<number | null>(null);
+
+  // Helper to resolve clip boundary for a given frame index
+  const getClipForIndex = useCallback((index: number): FramePhaseRange => {
+    return (
+      PHASE_RANGES.find((p) => index >= p.startIndex && index <= p.endIndex) ||
+      PHASE_RANGES[0]
+    );
+  }, []);
+
+  // Helper to load a single image index safely
+  const loadImage = useCallback((index: number): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      if (imagesRef.current.has(index)) {
+        resolve(imagesRef.current.get(index)!);
+        return;
+      }
+
+      const img = new Image();
+      img.src = FRAME_SEQUENCE[index];
+      img.onload = () => {
+        imagesRef.current.set(index, img);
+        resolve(img);
+      };
+      img.onerror = (err) => {
+        console.warn(`Failed to load frame ${index} (${FRAME_SEQUENCE[index]})`, err);
+        reject(err);
+      };
+    });
+  }, []);
+
+  // Preload sequence: Initial priority batch (first 100 frames), then sequential streaming
+  useEffect(() => {
+    let isCancelled = false;
+    const PRIORITY_BATCH_SIZE = 100; // Priority: Clip 1 and Clip 2 fully preloaded
+
+    const startPreloading = async () => {
+      let count = 0;
+
+      // 1. Priority Load (First 100 frames in strict order)
+      const priorityCount = Math.min(PRIORITY_BATCH_SIZE, TOTAL_FRAMES);
+      for (let i = 0; i < priorityCount; i++) {
+        if (isCancelled) return;
+        try {
+          await loadImage(i);
+          count++;
+          setLoadedCount(count);
+          onProgress?.((count / priorityCount) * 100);
+        } catch {
+          // continue
+        }
+      }
+
+      // Signal that priority batch is ready for seamless playback
+      onInitialLoadComplete?.();
+
+      // 2. Stream remaining frames sequentially in chunks
+      const CHUNK_SIZE = 8;
+      for (let i = priorityCount; i < TOTAL_FRAMES; i += CHUNK_SIZE) {
+        if (isCancelled) return;
+        const chunkIndices = [];
+        for (let j = i; j < Math.min(i + CHUNK_SIZE, TOTAL_FRAMES); j++) {
+          chunkIndices.push(j);
+        }
+
+        await Promise.all(
+          chunkIndices.map((idx) =>
+            loadImage(idx)
+              .then(() => {
+                count++;
+                setLoadedCount(count);
+              })
+              .catch(() => {})
+          )
+        );
+      }
+    };
+
+    startPreloading();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [loadImage, onProgress, onInitialLoadComplete]);
+
+  // Strict Clip-Boundary Aware Frame Selection
+  const getFrameToDraw = useCallback(
+    (targetIndex: number): HTMLImageElement | null => {
+      const activeClip = getClipForIndex(targetIndex);
+
+      // 1. Check exact requested index
+      if (imagesRef.current.has(targetIndex)) {
+        return imagesRef.current.get(targetIndex)!;
+      }
+
+      // 2. Search BACKWARD ONLY inside the current clip boundary
+      for (let i = targetIndex - 1; i >= activeClip.startIndex; i--) {
+        if (imagesRef.current.has(i)) {
+          return imagesRef.current.get(i)!;
+        }
+      }
+
+      // 3. Fallback to previous clip's last frame if available
+      if (activeClip.startIndex > 0 && imagesRef.current.has(activeClip.startIndex - 1)) {
+        return imagesRef.current.get(activeClip.startIndex - 1)!;
+      }
+
+      // 4. Return last drawn image if available to prevent canvas clear/flicker
+      return lastDrawnImageRef.current;
+    },
+    [getClipForIndex]
+  );
+
+  // Render Frame onto Canvas
+  const renderFrame = useCallback(
+    (index: number) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const imgToDraw = getFrameToDraw(index);
+      if (!imgToDraw || !imgToDraw.complete || imgToDraw.naturalWidth === 0) return;
+
+      lastDrawnImageRef.current = imgToDraw;
+
+      // Canvas dimensions with High-DPI support
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = canvas.getBoundingClientRect();
+      const targetWidth = Math.floor(rect.width * dpr);
+      const targetHeight = Math.floor(rect.height * dpr);
+
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+      }
+
+      // Clear with dark luxury canvas background
+      ctx.fillStyle = "#141312";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Calculate edge-to-edge cover positioning
+      const imgWidth = imgToDraw.naturalWidth;
+      const imgHeight = imgToDraw.naturalHeight;
+      const imgRatio = imgWidth / imgHeight;
+      const canvasRatio = canvas.width / canvas.height;
+
+      let drawWidth = canvas.width;
+      let drawHeight = canvas.height;
+      let drawX = 0;
+      let drawY = 0;
+
+      if (canvasRatio > imgRatio) {
+        drawWidth = canvas.width;
+        drawHeight = canvas.width / imgRatio;
+        drawX = 0;
+        drawY = (canvas.height - drawHeight) / 2;
+      } else {
+        drawHeight = canvas.height;
+        drawWidth = canvas.height * imgRatio;
+        drawX = (canvas.width - drawWidth) / 2;
+        drawY = 0;
+      }
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(imgToDraw, drawX, drawY, drawWidth, drawHeight);
+    },
+    [getFrameToDraw]
+  );
+
+  // Sync canvas draw with currentFrameIndex via requestAnimationFrame
+  useEffect(() => {
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current);
+    }
+    rafIdRef.current = requestAnimationFrame(() => {
+      renderFrame(currentFrameIndex);
+    });
+
+    return () => {
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, [currentFrameIndex, renderFrame, loadedCount]);
+
+  // Window resize listener
+  useEffect(() => {
+    const handleResize = () => {
+      renderFrame(currentFrameIndex);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [currentFrameIndex, renderFrame]);
+
+  return (
+    <div className="relative w-full h-full bg-brand-charcoal-deep overflow-hidden flex items-center justify-center">
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full block object-cover transition-opacity duration-300"
+        aria-label="CASORRO fragrance frame sequence"
+      />
+      <div
+        className="absolute inset-0 pointer-events-none bg-radial-vignette opacity-50"
+        aria-hidden="true"
+      />
+    </div>
+  );
+};
+
+export default FrameCanvas;
