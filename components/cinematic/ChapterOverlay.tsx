@@ -38,9 +38,6 @@ export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
         <span className="text-[10px] font-sans tracking-ultra uppercase text-brand-ivory/40">
           CASORRO &mdash; IVORY ROSE
         </span>
-        <span className="text-[10px] font-sans tracking-widest text-brand-rose/70 uppercase">
-          Frame {currentFrame + 1} / {totalFrames}
-        </span>
       </div>
 
       {/* Middle Section: Headline on left, CTAs on right */}
