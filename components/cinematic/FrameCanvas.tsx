@@ -52,7 +52,7 @@ export const FrameCanvas: React.FC<FrameCanvasProps> = ({
   // Preload sequence: Priority batch (Clip 1 - 240 frames), then sequential streaming
   useEffect(() => {
     let isCancelled = false;
-    const PRIORITY_BATCH_SIZE = 240; // Preload clip1 completely first
+    const PRIORITY_BATCH_SIZE = 10; // Preload a small batch first to show the UI quickly
 
     const startPreloading = async () => {
       let count = 0;

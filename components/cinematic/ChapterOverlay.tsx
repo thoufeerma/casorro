@@ -28,11 +28,13 @@ export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
 
   return (
     <div
-      className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-6 sm:p-12 lg:p-16 transition-opacity duration-500"
-      style={{ opacity: Math.max(0.15, opacity) }}
+      className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-6 sm:p-12 lg:p-16"
     >
       {/* Top watermark / brand indicator */}
-      <div className="flex items-center justify-between">
+      <div 
+        className="flex items-center justify-between transition-opacity duration-500"
+        style={{ opacity: Math.max(0.15, opacity) }}
+      >
         <span className="text-[10px] font-sans tracking-ultra uppercase text-brand-ivory/40">
           CASORRO &mdash; IVORY ROSE
         </span>
@@ -41,26 +43,50 @@ export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
         </span>
       </div>
 
-      {/* Main Chapter Headline & Subtitle */}
-      <div className="max-w-xl space-y-3 my-auto pl-4 border-l border-brand-rose/30">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-sans tracking-ultra uppercase text-brand-rose font-medium">
-            Chapter {chapter.number}
-          </span>
-          <span className="w-8 h-[1px] bg-brand-rose/40" />
+      {/* Middle Section: Headline on left, CTAs on right */}
+      <div className="flex-1 flex items-center w-full relative">
+        {/* Main Chapter Headline & Subtitle */}
+        <div 
+          className="max-w-xl space-y-3 pl-4 border-l border-brand-rose/30 transition-opacity duration-500"
+          style={{ opacity: Math.max(0.15, opacity) }}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-sans tracking-ultra uppercase text-brand-rose font-medium">
+              Chapter {chapter.number}
+            </span>
+            <span className="w-8 h-[1px] bg-brand-rose/40" />
+          </div>
+
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extralight tracking-widest text-brand-ivory drop-shadow-md leading-tight">
+            {chapter.title}
+          </h2>
+
+          <p className="font-sans text-xs sm:text-sm text-brand-ivory/70 font-light tracking-wide max-w-md">
+            {chapter.subtitle}
+          </p>
         </div>
 
-        <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extralight tracking-widest text-brand-ivory drop-shadow-md leading-tight">
-          {chapter.title}
-        </h2>
-
-        <p className="font-sans text-xs sm:text-sm text-brand-ivory/70 font-light tracking-wide max-w-md">
-          {chapter.subtitle}
-        </p>
+        {/* Dynamic CTAs (only appear near the end of clip 3) */}
+        {/* Does NOT fade away since opacity style is not applied here */}
+        <div 
+          className={`absolute right-[8vw] lg:right-[12vw] top-[48%] -translate-y-1/2 flex flex-col gap-4 pointer-events-auto transition-opacity duration-700 ${
+            currentFrame >= 800 ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <button className="bg-[#FAF8F5] hover:bg-white text-[#141312] font-sans font-medium tracking-widest uppercase h-[64px] w-[280px] text-[13px] transition-colors duration-300 shadow-2xl flex items-center justify-center">
+            SHOP NOW
+          </button>
+          <button className="bg-[#FAF8F5] hover:bg-white text-[#141312] font-sans font-medium tracking-widest uppercase h-[64px] w-[280px] text-[13px] transition-colors duration-300 shadow-2xl flex items-center justify-center">
+            LEARN MORE
+          </button>
+        </div>
       </div>
 
       {/* Bottom chapter progress indicator (3 clips) */}
-      <div className="flex items-center justify-between border-t border-brand-ivory/10 pt-4">
+      <div 
+        className="flex items-center justify-between border-t border-brand-ivory/10 pt-4 transition-opacity duration-500"
+        style={{ opacity: Math.max(0.15, opacity) }}
+      >
         <div className="text-[10px] font-sans tracking-ultra text-brand-ivory/40 uppercase">
           Scroll to navigate chapters
         </div>

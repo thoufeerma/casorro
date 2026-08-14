@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Header from "@/components/layout/Header";
-import CinematicSection from "@/components/cinematic/CinematicSection";
-import FutureContentSection from "@/components/content/FutureContentSection";
-import ProductCtaSection from "@/components/product/ProductCtaSection";
+import dynamic from "next/dynamic";
 import { INITIAL_CHAPTER } from "@/lib/constants";
 import { ChapterInfo } from "@/lib/types";
+
+const CinematicSection = dynamic(() => import("@/components/cinematic/CinematicSection"), { ssr: false });
+const FutureContentSection = dynamic(() => import("@/components/content/FutureContentSection").then(mod => mod.FutureContentSection));
+const ProductCtaSection = dynamic(() => import("@/components/product/ProductCtaSection").then(mod => mod.ProductCtaSection));
 
 export default function Home() {
   const [activeChapter, setActiveChapter] = useState<ChapterInfo>(INITIAL_CHAPTER);
