@@ -57,40 +57,55 @@ export const FrameCanvas: React.FC<FrameCanvasProps> = ({
     const startPreloading = async () => {
       let count = 0;
 
-      // 1. Priority Load (Clip 1 in strict sequential order)
-      const priorityCount = Math.min(PRIORITY_BATCH_SIZE, TOTAL_FRAMES);
-      for (let i = 0; i < priorityCount; i++) {
+      // 1. Skeleton Load: Load every 10th frame to prevent black screens
+      // This gives the user an instant, slightly lower-FPS version of the full video
+      const KEYFRAME_INTERVAL = 10;
+      const priorityIndices: number[] = [];
+      for (let i = 0; i < TOTAL_FRAMES; i += KEYFRAME_INTERVAL) {
+        priorityIndices.push(i);
+      }
+      // Guarantee the final frame is loaded so the cinematic hold works perfectly
+      if (!priorityIndices.includes(TOTAL_FRAMES - 1)) {
+        priorityIndices.push(TOTAL_FRAMES - 1);
+      }
+
+      for (let i = 0; i < priorityIndices.length; i++) {
         if (isCancelled) return;
         try {
-          await loadImage(i);
+          await loadImage(priorityIndices[i]);
           count++;
           setLoadedCount(count);
-          onProgress?.((count / priorityCount) * 100);
+          // Progress bar tracks total frames loaded
+          onProgress?.((count / TOTAL_FRAMES) * 100);
         } catch {
           // continue
         }
       }
 
-      // Signal that priority batch (clip1) is ready
+      // Signal that skeleton is ready! UI can be shown instantly.
       onInitialLoadComplete?.();
 
-      // 2. Stream remaining clip frames sequentially in chunks
-      const CHUNK_SIZE = 10;
-      for (let i = priorityCount; i < TOTAL_FRAMES; i += CHUNK_SIZE) {
-        if (isCancelled) return;
-        const chunkIndices = [];
-        for (let j = i; j < Math.min(i + CHUNK_SIZE, TOTAL_FRAMES); j++) {
-          chunkIndices.push(j);
+      // 2. Stream remaining frames to fill in the gaps
+      const remainingIndices: number[] = [];
+      for (let i = 0; i < TOTAL_FRAMES; i++) {
+        if (!priorityIndices.includes(i)) {
+          remainingIndices.push(i);
         }
+      }
 
+      const CHUNK_SIZE = 10;
+      for (let i = 0; i < remainingIndices.length; i += CHUNK_SIZE) {
+        if (isCancelled) return;
+        const chunk = remainingIndices.slice(i, i + CHUNK_SIZE);
         await Promise.all(
-          chunkIndices.map((idx) =>
+          chunk.map((idx) =>
             loadImage(idx)
               .then(() => {
                 count++;
                 setLoadedCount(count);
+                onProgress?.((count / TOTAL_FRAMES) * 100);
               })
-              .catch(() => {})
+              .catch(() => { })
           )
         );
       }
@@ -155,8 +170,8 @@ export const FrameCanvas: React.FC<FrameCanvasProps> = ({
         canvas.height = targetHeight;
       }
 
-      // Clear with dark luxury canvas background
-      ctx.fillStyle = "#141312";
+      // Clear with pure black to match image background and hide gaps
+      ctx.fillStyle = "#352424ff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Calculate edge-to-edge cover positioning
@@ -215,7 +230,7 @@ export const FrameCanvas: React.FC<FrameCanvasProps> = ({
   }, [currentFrameIndex, renderFrame]);
 
   return (
-    <div className="relative w-full h-full bg-brand-charcoal-deep overflow-hidden flex items-center justify-center">
+    <div className="relative w-full h-full bg-black overflow-hidden flex items-center justify-center">
       <canvas
         ref={canvasRef}
         className="w-full h-full block object-cover transition-opacity duration-300"
