@@ -8,107 +8,63 @@ interface ChapterOverlayProps {
 }
 
 export const ChapterOverlay: React.FC<ChapterOverlayProps> = ({
-  currentPhase,
   currentFrame,
   totalFrames,
 }) => {
-  const { chapter } = currentPhase;
-
-  // Calculate relative progress inside current clip (0 to 1)
-  const phaseLength = currentPhase.endIndex - currentPhase.startIndex + 1;
-  const phaseProgress = (currentFrame - currentPhase.startIndex) / Math.max(1, phaseLength);
-
-  // Soft fade in at clip start, full opacity in middle, soft fade out near clip end
-  let opacity = 1;
-  if (phaseProgress < 0.12) {
-    opacity = phaseProgress / 0.12;
-  } else if (phaseProgress > 0.88) {
-    opacity = (1 - phaseProgress) / 0.12;
-  }
+  const showUI = currentFrame >= totalFrames - 40;
 
   return (
-    <div
-      className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-6 sm:p-12 lg:p-16"
-    >
-      {/* Top watermark / brand indicator */}
+    <div className="absolute inset-0 pointer-events-none z-20">
+      
+      {/* LEFT SIDE: Identity */}
       <div 
-        className="flex items-center justify-between transition-opacity duration-500"
-        style={{ opacity: Math.max(0.15, opacity) }}
+        className={`absolute left-6 sm:left-12 lg:left-[10vw] top-[20%] sm:top-1/2 sm:-translate-y-1/2 flex flex-col gap-3 pointer-events-auto transition-all duration-1000 ease-out ${
+          showUI ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8 pointer-events-none"
+        }`}
       >
-        <span className="text-[10px] font-sans tracking-ultra uppercase text-brand-ivory/40">
-          CASORRO &mdash; IVORY ROSE
-        </span>
+        <h1 className="font-serif text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-extralight tracking-[0.15em] text-brand-ivory leading-[1.1] drop-shadow-sm">
+          IVORY<br />ROSE
+        </h1>
+        <p className="text-[9px] sm:text-[10px] md:text-xs font-sans tracking-[0.3em] uppercase text-brand-ivory/70 ml-1">
+          EAU DE PARFUM &middot; 100 ML
+        </p>
       </div>
 
-      {/* Middle Section: Headline on left, CTAs on right */}
-      <div className="flex-1 flex items-center w-full relative">
-        {/* Main Chapter Headline & Subtitle */}
-        <div 
-          className="max-w-xl space-y-3 pl-4 border-l border-brand-rose/30 transition-opacity duration-500"
-          style={{ opacity: Math.max(0.15, opacity) }}
+      {/* RIGHT SIDE: CTAs */}
+      <div 
+        className={`absolute right-6 sm:right-12 lg:right-[10vw] bottom-16 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 flex flex-col gap-8 lg:gap-10 pointer-events-auto transition-all duration-1000 ease-out delay-100 ${
+          showUI ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8 pointer-events-none"
+        }`}
+      >
+        <a 
+          href="https://www.casorro.com/collections/discovery-and-eternal-seven/products/ivory-rose-unisex-perfume-50ml"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex flex-col gap-3 font-sans text-xs sm:text-sm tracking-[0.2em] uppercase text-brand-ivory hover:text-brand-rose transition-colors duration-300 w-[200px] sm:w-[240px]"
         >
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-sans tracking-ultra uppercase text-brand-rose font-medium">
-              Chapter {chapter.number}
-            </span>
-            <span className="w-8 h-[1px] bg-brand-rose/40" />
+          <div className="flex items-center justify-between px-1">
+            <span>SHOP NOW</span>
+            <span className="transform group-hover:translate-x-2 transition-transform duration-300 font-light">&rarr;</span>
           </div>
-
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extralight tracking-widest text-brand-ivory drop-shadow-md leading-tight">
-            {chapter.title}
-          </h2>
-
-          <p className="font-sans text-xs sm:text-sm text-brand-ivory/70 font-light tracking-wide max-w-md">
-            {chapter.subtitle}
-          </p>
-        </div>
-
-        {/* Dynamic CTAs (only appear near the end of clip 3) */}
-        {/* Does NOT fade away since opacity style is not applied here */}
-        <div 
-          className={`absolute right-[8vw] lg:right-[12vw] top-[48%] -translate-y-1/2 flex flex-col gap-4 pointer-events-auto transition-opacity duration-700 ${
-            currentFrame >= 800 ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
+          <div className="w-full h-[1px] bg-brand-rose/40 group-hover:bg-brand-rose transition-colors duration-300" />
+        </a>
+        
+        <a 
+          href="https://www.casorro.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex flex-col gap-3 font-sans text-xs sm:text-sm tracking-[0.2em] uppercase text-brand-ivory/70 hover:text-brand-ivory transition-colors duration-300 w-[200px] sm:w-[240px]"
         >
-          <button className="bg-[#FAF8F5] hover:bg-white text-[#141312] font-sans font-medium tracking-widest uppercase h-[64px] w-[280px] text-[13px] transition-colors duration-300 shadow-2xl flex items-center justify-center">
-            SHOP NOW
-          </button>
-          <button className="bg-[#FAF8F5] hover:bg-white text-[#141312] font-sans font-medium tracking-widest uppercase h-[64px] w-[280px] text-[13px] transition-colors duration-300 shadow-2xl flex items-center justify-center">
-            LEARN MORE
-          </button>
-        </div>
+          <div className="flex items-center justify-between px-1">
+            <span>LEARN MORE</span>
+            <span className="transform group-hover:translate-x-2 transition-transform duration-300 font-light">&rarr;</span>
+          </div>
+          <div className="w-full h-[1px] bg-brand-ivory/20 group-hover:bg-brand-ivory/50 transition-colors duration-300" />
+        </a>
       </div>
 
-      {/* Bottom chapter progress indicator (3 clips) */}
-      <div 
-        className="flex items-center justify-between border-t border-brand-ivory/10 pt-4 transition-opacity duration-500"
-        style={{ opacity: Math.max(0.15, opacity) }}
-      >
-        <div className="text-[10px] font-sans tracking-ultra text-brand-ivory/40 uppercase">
-          Scroll to navigate chapters
-        </div>
-        <div className="flex items-center gap-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-[2px] transition-all duration-300 ${
-                chapter.number === getRomanNumeral(i + 1)
-                  ? "w-8 bg-brand-rose"
-                  : "w-2.5 bg-brand-ivory/20"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
     </div>
   );
 };
-
-function getRomanNumeral(num: number): string {
-  const map: Record<number, string> = {
-    1: "I", 2: "II", 3: "III"
-  };
-  return map[num] || `${num}`;
-}
 
 export default ChapterOverlay;

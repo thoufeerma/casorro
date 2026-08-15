@@ -1,60 +1,62 @@
 import React from "react";
-import { FRAGRANCE_NOTES } from "@/lib/constants";
 
 export const FutureContentSection: React.FC = () => {
   return (
     <section
-      id="future-content"
-      aria-label="Fragrance Story and Olfactory Composition"
-      className="relative w-full py-24 sm:py-32 md:py-40 bg-brand-charcoal text-brand-ivory border-b border-brand-charcoal-light/30"
+      id="fragrance-info"
+      aria-label="Fragrance Information"
+      className="relative w-full py-16 sm:py-20 md:py-24 bg-[#E9DDD2] text-[#2C2521] border-b border-[#2C2521]/10"
     >
-      <div className="max-w-6xl mx-auto px-6 sm:px-10 lg:px-16">
+      <div className="max-w-6xl mx-auto px-6 sm:px-10 lg:px-16 text-center">
+        
         {/* Section Header */}
-        <div className="max-w-2xl mb-16 sm:mb-24">
-          <p className="text-xs font-sans tracking-ultra uppercase text-brand-rose mb-3">
-            II &mdash; The Olfactory Narrative
-          </p>
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-light tracking-wide text-brand-ivory mb-6 leading-tight">
-            Crafted in silence. Defined by light and petal.
+        <div className="max-w-3xl mx-auto mb-14 sm:mb-20">
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extralight tracking-widest mb-6 leading-tight text-[#2C2521]">
+            THE FRAGRANCE
           </h2>
-          <p className="text-sm font-sans text-brand-ivory/60 leading-relaxed font-light">
-            IVORY ROSE is an ethereal study in contrast &mdash; where the crisp air of pink pepper encounters the deep, tactile warm grace of velvet Damask rose.
+          <p className="text-sm sm:text-base font-sans leading-relaxed font-light text-[#2C2521]/80 max-w-xl mx-auto">
+            Inspired by the Taj Mahal, the timeless symbol of love, purity, and devotion, Ivory Rose is a unisex fragrance that balances softness with strength.
           </p>
         </div>
 
-        {/* Notes Grid Placeholder */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-14">
-          {FRAGRANCE_NOTES.map((note, index) => (
-            <div
-              key={index}
-              className="group p-8 bg-brand-charcoal-light/40 border border-brand-rose/10 hover:border-brand-rose/30 transition-all duration-500 flex flex-col justify-between"
-            >
-              <div>
-                <span className="text-[10px] font-sans tracking-ultra uppercase text-brand-rose/80 block mb-4">
-                  {note.category} Accord
-                </span>
-                <h3 className="font-serif text-xl sm:text-2xl text-brand-ivory font-light mb-3 group-hover:text-brand-champagne transition-colors duration-300">
-                  {note.name}
-                </h3>
-                <p className="text-xs font-sans text-brand-ivory/60 leading-relaxed font-light">
-                  {note.description}
-                </p>
-              </div>
-
-              <div className="mt-8 pt-4 border-t border-brand-rose/10 flex items-center justify-between text-[10px] tracking-widest text-brand-ivory/30 uppercase">
-                <span>Phase 0{index + 1}</span>
-                <span>Extract</span>
-              </div>
+        {/* Minimal Notes Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 lg:gap-14">
+          
+          {/* Head Accord */}
+          <div className="flex flex-col gap-4 items-center">
+            <h3 className="text-[10px] sm:text-xs font-sans tracking-[0.3em] uppercase text-[#B58B86]">
+              HEAD
+            </h3>
+            <div className="space-y-1 font-serif text-lg sm:text-xl font-light tracking-wide text-[#2C2521]">
+              <p>Sea Water</p>
+              <p>Liquorice</p>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Future Chapter Note */}
-        <div className="mt-20 text-center border-t border-brand-charcoal-light/60 pt-12">
-          <p className="text-xs font-sans tracking-ultra text-brand-ivory/40 uppercase">
-            Scroll-Triggered Scene & Ingredient Layering to be mapped in Phase II
-          </p>
+          {/* Heart Accord */}
+          <div className="flex flex-col gap-4 items-center md:border-x md:border-[#2C2521]/10 md:px-8">
+            <h3 className="text-[10px] sm:text-xs font-sans tracking-[0.3em] uppercase text-[#B58B86]">
+              HEART
+            </h3>
+            <div className="space-y-1 font-serif text-lg sm:text-xl font-light tracking-wide text-[#2C2521]">
+              <p>Rose Turkish Lokum</p>
+              <p>Dried Rose Petals</p>
+            </div>
+          </div>
+
+          {/* Base Accord */}
+          <div className="flex flex-col gap-4 items-center">
+            <h3 className="text-[10px] sm:text-xs font-sans tracking-[0.3em] uppercase text-[#B58B86]">
+              BASE
+            </h3>
+            <div className="space-y-1 font-serif text-lg sm:text-xl font-light tracking-wide text-[#2C2521]">
+              <p>Vanilla Cream</p>
+              <p>White Musk</p>
+            </div>
+          </div>
+
         </div>
+        
       </div>
     </section>
   );

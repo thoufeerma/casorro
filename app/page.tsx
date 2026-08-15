@@ -6,7 +6,14 @@ import dynamic from "next/dynamic";
 import { INITIAL_CHAPTER } from "@/lib/constants";
 import { ChapterInfo } from "@/lib/types";
 
-const CinematicSection = dynamic(() => import("@/components/cinematic/CinematicSection"), { ssr: false });
+const CinematicSection = dynamic(() => import("@/components/cinematic/CinematicSection"), { 
+  ssr: false,
+  loading: () => (
+    <div className="fixed inset-0 z-50 bg-[#141312] flex items-center justify-center">
+      <img src="/images/Casorro_Logo_3.webp" alt="CASORRO" className="h-16 w-auto object-contain animate-pulse" />
+    </div>
+  )
+});
 const FutureContentSection = dynamic(() => import("@/components/content/FutureContentSection").then(mod => mod.FutureContentSection));
 const ProductCtaSection = dynamic(() => import("@/components/product/ProductCtaSection").then(mod => mod.ProductCtaSection));
 
